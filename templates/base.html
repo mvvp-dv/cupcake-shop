@@ -32,13 +32,19 @@
         Olá, {{ session.get("usuario_nome") }}
     </span>
 
-    <a href="{{ url_for('meus_pedidos') }}" class="nav-link">
-        Meus pedidos
-    </a>
+<a href="{{ url_for('meus_pedidos') }}" class="nav-link">
+    Meus pedidos
+</a>
 
-    <a href="{{ url_for('logout') }}" class="nav-link">
-        Sair
+{% if session.get("usuario_tipo") == "admin" %}
+    <a href="{{ url_for('admin') }}" class="nav-link">
+        Administração
     </a>
+{% endif %}
+
+<a href="{{ url_for('logout') }}" class="nav-link">
+    Sair
+</a>
 
         {% else %}
 
