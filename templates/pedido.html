@@ -51,23 +51,82 @@
             <strong>{{ pedido["status_pagamento"] }}</strong>
         </div>
 
-        <div class="order-card">
-            <h2>🚚 Acompanhamento</h2>
+<div class="order-card">
+    <h2>🚚 Acompanhamento</h2>
 
-            <div class="order-status">
-                <strong>{{ pedido["status"] }}</strong>
-            </div>
+    <div class="order-status">
+        <strong>{{ pedido["status"] }}</strong>
+    </div>
 
-            <p class="simulation-note">
-                Acompanhamento demonstrativo do pedido.
-            </p>
+    <div class="tracking-steps">
+
+        <div class="tracking-step">
+            <span>✅</span>
+            <strong>Recebido</strong>
         </div>
 
-        <a href="{{ url_for('home') }}" class="back-store-button">
-            Voltar para a loja
-        </a>
+        <div class="tracking-step">
+            <span>
+                {% if pedido["status"] in ["Em preparo", "Saiu para entrega", "Entregue"] %}
+                    ✅
+                {% else %}
+                    ⏳
+                {% endif %}
+            </span>
+            <strong>Em preparo</strong>
+        </div>
+
+        <div class="tracking-step">
+            <span>
+                {% if pedido["status"] in ["Saiu para entrega", "Entregue"] %}
+                    ✅
+                {% else %}
+                    ⏳
+                {% endif %}
+            </span>
+            <strong>Saiu para entrega</strong>
+        </div>
+
+        <div class="tracking-step">
+            <span>
+                {% if pedido["status"] == "Entregue" %}
+                    ✅
+                {% else %}
+                    ⏳
+                {% endif %}
+            </span>
+            <strong>Entregue</strong>
+        </div>
 
     </div>
+
+    {% if pedido["status"] == "Saiu para entrega" %}
+
+        <div class="tracking-route">
+            <span>🧁 Loja</span>
+            <div class="route-line">🚚 ───────────</div>
+            <span>🏠 Entrega</span>
+        </div>
+
+        <p class="simulation-note">
+            Rota de entrega simulada para fins acadêmicos.
+        </p>
+
+    {% else %}
+
+        <p class="simulation-note">
+            Acompanhamento demonstrativo do pedido.
+        </p>
+
+    {% endif %}
+
+</div>
+
+<a href="{{ url_for('home') }}" class="back-store-button">
+    Voltar para a loja
+</a>
+
+</div>
 </section>
 
 {% endblock %}
