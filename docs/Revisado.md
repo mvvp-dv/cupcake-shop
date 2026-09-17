@@ -277,6 +277,7 @@ O diagrama de classes representa as principais entidades da aplicação e os rel
 
 ```mermaid
 classDiagram
+direction TB
 
 class Usuario {
     +int id
@@ -291,7 +292,6 @@ class Endereco {
     +int usuario_id
     +string rua
     +string numero
-    +string complemento
     +string bairro
     +string cidade
     +string cep
@@ -302,7 +302,6 @@ class Produto {
     +string nome
     +string descricao
     +float preco
-    +string imagem
     +boolean disponivel
 }
 
@@ -322,7 +321,6 @@ class Pedido {
     +int id
     +int usuario_id
     +int endereco_id
-    +datetime data
     +float valor_total
     +string status
 }
@@ -342,16 +340,13 @@ class Pagamento {
     +string status
 }
 
-Usuario "1" --> "0..*" Endereco
-Usuario "1" --> "1" Carrinho
-Usuario "1" --> "0..*" Pedido
-
-Carrinho "1" --> "0..*" ItemCarrinho
-Produto "1" --> "0..*" ItemCarrinho
-
-Pedido "1" --> "1..*" ItemPedido
-Produto "1" --> "0..*" ItemPedido
-
-Pedido "1" --> "1" Pagamento
-Pedido "1" --> "1" Endereco
+Usuario --> Endereco
+Usuario --> Carrinho
+Usuario --> Pedido
+Carrinho --> ItemCarrinho
+ItemCarrinho --> Produto
+Pedido --> ItemPedido
+ItemPedido --> Produto
+Pedido --> Pagamento
+Pedido --> Endereco
 ```
