@@ -7,7 +7,13 @@
 <section class="order-page">
     <div class="order-container">
 
-        <h1>⚙️ Administração</h1>
+        <div class="admin-header">
+            <div>
+                <span class="eyebrow">PAINEL ADMINISTRATIVO</span>
+                <h1>⚙️ Administração</h1>
+                <p>Gerencie os pedidos e os produtos da Cupcake Shop.</p>
+            </div>
+        </div>
 
         {% with mensagens = get_flashed_messages() %}
             {% if mensagens %}
@@ -17,44 +23,169 @@
             {% endif %}
         {% endwith %}
 
+        <!-- ABAS -->
+        <div class="admin-tabs">
+            <button
+                type="button"
+                class="admin-tab active"
+                data-admin-tab="pedidos"
+            >
+                📦 Pedidos
+            </button>
 
-        <!-- CADASTRAR PRODUTO -->
-
-        <div class="order-card">
-            <h2>🧁 Cadastrar cupcake</h2>
-
-            <form action="{{ url_for('admin_novo_produto') }}" method="POST">
-
-                <label>Nome</label>
-                <input type="text" name="nome" required>
-
-                <label>Descrição</label>
-                <input type="text" name="descricao" required>
-
-                <label>Preço</label>
-                <input type="number" name="preco" step="0.01" min="0" required>
-
-                <label>Imagem / emoji</label>
-                <input type="text" name="imagem" value="🧁">
-
-                <button class="checkout-button" type="submit">
-                    Cadastrar produto
-                </button>
-
-            </form>
+            <button
+                type="button"
+                class="admin-tab"
+                data-admin-tab="produtos"
+            >
+                🧁 Produtos
+            </button>
         </div>
 
 
+        <!-- ===================== -->
+        <!-- PEDIDOS -->
+        <!-- ===================== -->
+
+        <div id="admin-pedidos" class="admin-section active">
+
+            <div class="admin-section-title">
+                <div>
+                    <h2>Pedidos</h2>
+                    <p>Acompanhe os pedidos recebidos e atualize o andamento.</p>
+                </div>
+
+                <span class="admin-count">
+                    {{ pedidos|length }} pedido(s)
+                </span>
+            </div>
+
+            {% if pedidos %}
+
+                <div class="admin-orders">
+
+                    {% for pedido in pedidos %}
+
+                        <div class="admin-order-card">
+
+                            <div class="admin-order-top">
+                                <div>
+                                    <span class="admin-order-number">
+                                        Pedido #{{ pedido["id"] }}
+                                    </span>
+
+                                    <h3>{{ pedido["cliente"] }}</h3>
+
+                                    <p>
+                                        {{ pedido["data"] }}
+                                    </p>
+                                </div>
+
+                                <div class="admin-order-value">
+                                    <span>Total</span>
+
+                                    <strong>
+                                        R$ {{ "%.2f"|format(pedido["valor_total"])|replace(".", ",") }}
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <form
+                                class="admin-status-form"
+                                action="{{ url_for('admin_status_pedido', pedido_id=pedido['id']) }}"
+                                method="POST"
+                            >
+
+                                <div>
+                                    <label>Status do pedido</label>
+
+                                    <select name="status">
+
+                                        <option
+                                            value="Recebido"
+                                            {% if pedido["status"] == "Recebido" %}selected{% endif %}
+                                        >
+                                            Recebido
+                                        </option>
+
+                                        <option
+                                            value="Em preparo"
+                                            {% if pedido["status"] == "Em preparo" %}selected{% endif %}
+                                        >
+                                            Em preparo
+                                        </option>
+
+                                        <option
+                                            value="Saiu para entrega"
+                                            {% if pedido["status"] == "Saiu para entrega" %}selected{% endif %}
+                                        >
+                                            Saiu para entrega
+                                        </option>
+
+                                        <option
+                                            value="Entregue"
+                                            {% if pedido["status"] == "Entregue" %}selected{% endif %}
+                                        >
+                                            Entregue
+                                        </option>
+
+                                    </select>
+                                </div>
+
+                                <button
+                                    class="checkout-button"
+                                    type="submit"
+                                >
+                                    Atualizar status
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="order-card admin-empty">
+                    <div>📦</div>
+                    <h3>Nenhum pedido realizado</h3>
+                    <p>Os novos pedidos aparecerão aqui.</p>
+                </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- ===================== -->
         <!-- PRODUTOS -->
+        <!-- ===================== -->
 
-        <h2>Produtos</h2>
+        <div id="admin-produtos" class="admin-section">
 
-        {% for produto in produtos %}
+            <div class="admin-section-title">
+                <div>
+                    <h2>Produtos</h2>
+                    <p>Cadastre cupcakes e altere os produtos disponíveis na loja.</p>
+                </div>
 
-            <div class="order-card">
+                <span class="admin-count">
+                    {{ produtos|length }} produto(s)
+                </span>
+            </div>
+
+
+            <!-- CADASTRAR PRODUTO -->
+
+            <div class="order-card admin-new-product">
+
+                <h2>🧁 Cadastrar cupcake</h2>
 
                 <form
-                    action="{{ url_for('admin_editar_produto', produto_id=produto['id']) }}"
+                    action="{{ url_for('admin_novo_produto') }}"
                     method="POST"
                 >
 
@@ -62,7 +193,6 @@
                     <input
                         type="text"
                         name="nome"
-                        value="{{ produto['nome'] }}"
                         required
                     >
 
@@ -70,128 +200,160 @@
                     <input
                         type="text"
                         name="descricao"
-                        value="{{ produto['descricao'] }}"
                         required
                     >
 
-                    <label>Preço</label>
-                    <input
-                        type="number"
-                        name="preco"
-                        step="0.01"
-                        min="0"
-                        value="{{ produto['preco'] }}"
-                        required
+                    <div class="admin-form-row">
+
+                        <div>
+                            <label>Preço</label>
+                            <input
+                                type="number"
+                                name="preco"
+                                step="0.01"
+                                min="0"
+                                required
+                            >
+                        </div>
+
+                        <div>
+                            <label>Imagem / emoji</label>
+                            <input
+                                type="text"
+                                name="imagem"
+                                value="🧁"
+                            >
+                        </div>
+
+                    </div>
+
+                    <button
+                        class="checkout-button"
+                        type="submit"
                     >
-
-                    <label>Imagem / emoji</label>
-                    <input
-                        type="text"
-                        name="imagem"
-                        value="{{ produto['imagem'] }}"
-                    >
-
-                    <label>
-                        <input
-                            type="checkbox"
-                            name="disponivel"
-                            {% if produto["disponivel"] %}checked{% endif %}
-                        >
-                        Disponível para venda
-                    </label>
-
-                    <button class="checkout-button" type="submit">
-                        Salvar alterações
+                        Cadastrar produto
                     </button>
 
                 </form>
 
             </div>
 
-        {% endfor %}
 
+            <!-- PRODUTOS EXISTENTES -->
 
-        <!-- PEDIDOS -->
+            <h2 class="admin-products-heading">
+                Produtos cadastrados
+            </h2>
 
-        <h2>Pedidos</h2>
+            <div class="admin-products-grid">
 
-        {% if pedidos %}
+                {% for produto in produtos %}
 
-            {% for pedido in pedidos %}
+                    <div class="order-card admin-product-card">
 
-                <div class="order-card">
+                        <div class="admin-product-title">
+                            <span>{{ produto["imagem"] or "🧁" }}</span>
+                            <strong>{{ produto["nome"] }}</strong>
+                        </div>
 
-                    <strong>Pedido #{{ pedido["id"] }}</strong>
+                        <form
+                            action="{{ url_for('admin_editar_produto', produto_id=produto['id']) }}"
+                            method="POST"
+                        >
 
-                    <p>
-                        Cliente: {{ pedido["cliente"] }}
-                    </p>
-
-                    <p>
-                        Total:
-                        <strong>
-                            R$ {{ "%.2f"|format(pedido["valor_total"]) }}
-                        </strong>
-                    </p>
-
-                    <form
-                        action="{{ url_for('admin_status_pedido', pedido_id=pedido['id']) }}"
-                        method="POST"
-                    >
-
-                        <label>Status</label>
-
-                        <select name="status">
-
-                            <option
-                                value="Recebido"
-                                {% if pedido["status"] == "Recebido" %}selected{% endif %}
+                            <label>Nome</label>
+                            <input
+                                type="text"
+                                name="nome"
+                                value="{{ produto['nome'] }}"
+                                required
                             >
-                                Recebido
-                            </option>
 
-                            <option
-                                value="Em preparo"
-                                {% if pedido["status"] == "Em preparo" %}selected{% endif %}
+                            <label>Descrição</label>
+                            <input
+                                type="text"
+                                name="descricao"
+                                value="{{ produto['descricao'] }}"
+                                required
                             >
-                                Em preparo
-                            </option>
 
-                            <option
-                                value="Saiu para entrega"
-                                {% if pedido["status"] == "Saiu para entrega" %}selected{% endif %}
+                            <label>Preço</label>
+                            <input
+                                type="number"
+                                name="preco"
+                                step="0.01"
+                                min="0"
+                                value="{{ produto['preco'] }}"
+                                required
                             >
-                                Saiu para entrega
-                            </option>
 
-                            <option
-                                value="Entregue"
-                                {% if pedido["status"] == "Entregue" %}selected{% endif %}
+                            <label>Imagem / emoji</label>
+                            <input
+                                type="text"
+                                name="imagem"
+                                value="{{ produto['imagem'] }}"
                             >
-                                Entregue
-                            </option>
 
-                        </select>
+                            <label class="admin-available">
+                                <input
+                                    type="checkbox"
+                                    name="disponivel"
+                                    {% if produto["disponivel"] %}checked{% endif %}
+                                >
+                                Disponível para venda
+                            </label>
 
-                        <button class="checkout-button" type="submit">
-                            Atualizar status
-                        </button>
+                            <button
+                                class="checkout-button"
+                                type="submit"
+                            >
+                                Salvar alterações
+                            </button>
 
-                    </form>
+                        </form>
 
-                </div>
+                    </div>
 
-            {% endfor %}
+                {% endfor %}
 
-        {% else %}
-
-            <div class="order-card">
-                <p>Nenhum pedido realizado.</p>
             </div>
 
-        {% endif %}
+        </div>
 
     </div>
 </section>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const tabs = document.querySelectorAll(".admin-tab");
+    const sections = document.querySelectorAll(".admin-section");
+
+    tabs.forEach(function (tab) {
+
+        tab.addEventListener("click", function () {
+
+            const target = tab.dataset.adminTab;
+
+            tabs.forEach(function (item) {
+                item.classList.remove("active");
+            });
+
+            sections.forEach(function (section) {
+                section.classList.remove("active");
+            });
+
+            tab.classList.add("active");
+
+            document
+                .getElementById("admin-" + target)
+                .classList.add("active");
+        });
+
+    });
+
+});
+</script>
 
 {% endblock %}
