@@ -350,3 +350,37 @@ ItemPedido --> Produto
 Pedido --> Pagamento
 Pedido --> Endereco
 ```
+---
+
+# 8. Diagrama de Sequência
+
+O diagrama de sequência representa o fluxo principal para realização de um pedido na aplicação.
+
+```mermaid
+sequenceDiagram
+    actor Cliente
+    participant Interface
+    participant Backend
+    participant Banco
+
+    Cliente->>Interface: Visualiza os cupcakes
+    Interface->>Backend: Solicita produtos
+    Backend->>Banco: Consulta produtos disponíveis
+    Banco-->>Backend: Retorna produtos
+    Backend-->>Interface: Exibe vitrine
+
+    Cliente->>Interface: Adiciona produto ao carrinho
+    Interface->>Backend: Envia produto e quantidade
+    Backend->>Banco: Registra item no carrinho
+
+    Cliente->>Interface: Continua o pedido
+    Interface->>Cliente: Solicita endereço e pagamento
+    Cliente->>Interface: Informa os dados
+    Interface->>Backend: Confirma pedido
+    Backend->>Banco: Registra endereço
+    Backend->>Banco: Registra pedido e itens
+    Backend->>Banco: Registra pagamento demonstrativo
+    Banco-->>Backend: Retorna número do pedido
+    Backend-->>Interface: Confirma realização do pedido
+    Interface-->>Cliente: Exibe pedido e status
+```
