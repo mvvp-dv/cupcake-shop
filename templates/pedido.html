@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Pedido #{{ pedido["id"] }} | Cupcake Shop{% endblock %}
+
+{% block content %}
+
+<section class="order-page">
+    <div class="order-container">
+
+        <div class="order-success">
+            <div class="order-icon">✅</div>
+            <h1>Pedido realizado!</h1>
+            <p>Pedido <strong>#{{ pedido["id"] }}</strong></p>
+        </div>
+
+        <div class="order-card">
+            <h2>🧁 Seu pedido</h2>
+
+            {% for item in itens %}
+                <div class="order-item">
+                    <span>
+                        {{ item["quantidade"] }}x {{ item["nome"] }}
+                    </span>
+
+                    <strong>
+                        R$ {{ "%.2f"|format(item["preco_unitario"] * item["quantidade"]) }}
+                    </strong>
+                </div>
+            {% endfor %}
+
+            <div class="order-total">
+                <span>Total</span>
+                <strong>R$ {{ "%.2f"|format(pedido["valor_total"]) }}</strong>
+            </div>
+        </div>
+
+        <div class="order-card">
+            <h2>📍 Entrega</h2>
+
+            <p>
+                {{ pedido["rua"] }}, {{ pedido["numero"] }}<br>
+                {{ pedido["bairro"] }} — {{ pedido["cidade"] }}<br>
+                CEP: {{ pedido["cep"] }}
+            </p>
+        </div>
+
+        <div class="order-card">
+            <h2>💳 Pagamento</h2>
+
+            <p>{{ pedido["forma_pagamento"] }}</p>
+            <strong>{{ pedido["status_pagamento"] }}</strong>
+        </div>
+
+        <div class="order-card">
+            <h2>🚚 Acompanhamento</h2>
+
+            <div class="order-status">
+                <strong>{{ pedido["status"] }}</strong>
+            </div>
+
+            <p class="simulation-note">
+                Acompanhamento demonstrativo do pedido.
+            </p>
+        </div>
+
+        <a href="{{ url_for('home') }}" class="back-store-button">
+            Voltar para a loja
+        </a>
+
+    </div>
+</section>
+
+{% endblock %}
