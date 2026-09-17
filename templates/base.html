@@ -26,18 +26,19 @@
 
     <nav>
 
-        {% if session.get("usuario_id") %}
+       {% if session.get("usuario_id") %}
 
-            <span class="user-name">
-                Olá, {{ session.get("usuario_nome") }}
-            </span>
+    <span class="user-name">
+        Olá, {{ session.get("usuario_nome") }}
+    </span>
 
-            <a
-                href="{{ url_for('logout') }}"
-                class="nav-link"
-            >
-                Sair
-            </a>
+    <a href="{{ url_for('meus_pedidos') }}" class="nav-link">
+        Meus pedidos
+    </a>
+
+    <a href="{{ url_for('logout') }}" class="nav-link">
+        Sair
+    </a>
 
         {% else %}
 
