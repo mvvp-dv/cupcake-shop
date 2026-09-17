@@ -319,7 +319,196 @@ def remover_item(item_id):
 
     return redirect(url_for("carrinho"))
     
+@app.route("/checkout", methods=["GET", "POST"])
+def checkout():
 
+    if "usuario_id" not in session:
+        flash("Faça login para continuar.")
+        return redirect(url_for("login"))
+
+    db = get_db()
+
+    carrinho_usuario = db.execute(
+        "SELECT id FROM carrinhos WHERE usuario_id = ?",
+        (session["usuario_id"],)
+    ).fetchone()
+
+    itens = db.execute(
+        """
+        SELECT
+            itens_carrinho.produto_id,
+            itens_carrinho.quantidade,
+            produtos.nome,
+            produtos.preco,
+            (produtos.preco * itens_carrinho.quantidade) AS subtotal
+        FROM itens_carrinho
+        JOIN produtos
+            ON produtos.id = itens_carrinho.produto_id
+        WHERE itens_carrinho.carrinho_id = ?
+        """,
+        (carrinho_usuario["id"],)
+    ).fetchall()
+
+    if not itens:
+        flash("Seu carrinho está vazio.")
+        return redirect(url_for("carrinho"))
+
+    total = sum(item["subtotal"] for item in itens)
+
+    if request.method == "POST":
+
+        rua = request.form["rua"].strip()
+        numero = request.form["numero"].strip()
+        complemento = request.form.get("complemento", "").strip()
+        bairro = request.form["bairro"].strip()
+        cidade = request.form["cidade"].strip()
+        cep = request.form["cep"].strip()
+        forma_pagamento = request.form["forma_pagamento"]
+
+        if not rua or not numero or not bairro or not cidade or not cep:
+            flash("Preencha os dados do endereço.")
+            return render_template(
+                "checkout.html",
+                itens=itens,
+                total=total
+            )
+
+        cursor_endereco = db.execute(
+            """
+            INSERT INTO enderecos
+            (usuario_id, rua, numero, complemento, bairro, cidade, cep)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                session["usuario_id"],
+                rua,
+                numero,
+                complemento,
+                bairro,
+                cidade,
+                cep
+            )
+        )
+
+        endereco_id = cursor_endereco.lastrowid
+
+        cursor_pedido = db.execute(
+            """
+            INSERT INTO pedidos
+            (usuario_id, endereco_id, valor_total, status)
+            VALUES (?, ?, ?, 'Recebido')
+            """,
+            (
+                session["usuario_id"],
+                endereco_id,
+                total
+            )
+        )
+
+        pedido_id = cursor_pedido.lastrowid
+
+        for item in itens:
+            db.execute(
+                """
+                INSERT INTO itens_pedido
+                (pedido_id, produto_id, quantidade, preco_unitario)
+                VALUES (?, ?, ?, ?)
+                """,
+                (
+                    pedido_id,
+                    item["produto_id"],
+                    item["quantidade"],
+                    item["preco"]
+                )
+            )
+
+        db.execute(
+            """
+            INSERT INTO pagamentos
+            (pedido_id, forma, status)
+            VALUES (?, ?, 'Aprovado (simulação)')
+            """,
+            (
+                pedido_id,
+                forma_pagamento
+            )
+        )
+
+        db.execute(
+            "DELETE FROM itens_carrinho WHERE carrinho_id = ?",
+            (carrinho_usuario["id"],)
+        )
+
+        db.commit()
+
+        return redirect(
+            url_for("pedido", pedido_id=pedido_id)
+        )
+
+    return render_template(
+        "checkout.html",
+        itens=itens,
+        total=total
+    )
+
+
+@app.route("/pedido/<int:pedido_id>")
+def pedido(pedido_id):
+
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+
+    db = get_db()
+
+    pedido = db.execute(
+        """
+        SELECT
+            pedidos.*,
+            enderecos.rua,
+            enderecos.numero,
+            enderecos.bairro,
+            enderecos.cidade,
+            enderecos.cep,
+            pagamentos.forma AS forma_pagamento,
+            pagamentos.status AS status_pagamento
+        FROM pedidos
+        JOIN enderecos
+            ON enderecos.id = pedidos.endereco_id
+        JOIN pagamentos
+            ON pagamentos.pedido_id = pedidos.id
+        WHERE pedidos.id = ?
+        AND pedidos.usuario_id = ?
+        """,
+        (
+            pedido_id,
+            session["usuario_id"]
+        )
+    ).fetchone()
+
+    if pedido is None:
+        flash("Pedido não encontrado.")
+        return redirect(url_for("home"))
+
+    itens = db.execute(
+        """
+        SELECT
+            itens_pedido.quantidade,
+            itens_pedido.preco_unitario,
+            produtos.nome,
+            produtos.imagem
+        FROM itens_pedido
+        JOIN produtos
+            ON produtos.id = itens_pedido.produto_id
+        WHERE itens_pedido.pedido_id = ?
+        """,
+        (pedido_id,)
+    ).fetchall()
+
+    return render_template(
+        "pedido.html",
+        pedido=pedido,
+        itens=itens
+    )
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)
