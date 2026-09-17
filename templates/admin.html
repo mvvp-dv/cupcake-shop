@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Administração | Cupcake Shop{% endblock %}
+
+{% block content %}
+
+<section class="order-page">
+    <div class="order-container">
+
+        <h1>⚙️ Administração</h1>
+
+        {% with mensagens = get_flashed_messages() %}
+            {% if mensagens %}
+                {% for mensagem in mensagens %}
+                    <div class="alerta">{{ mensagem }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+
+        <!-- CADASTRAR PRODUTO -->
+
+        <div class="order-card">
+            <h2>🧁 Cadastrar cupcake</h2>
+
+            <form action="{{ url_for('admin_novo_produto') }}" method="POST">
+
+                <label>Nome</label>
+                <input type="text" name="nome" required>
+
+                <label>Descrição</label>
+                <input type="text" name="descricao" required>
+
+                <label>Preço</label>
+                <input type="number" name="preco" step="0.01" min="0" required>
+
+                <label>Imagem / emoji</label>
+                <input type="text" name="imagem" value="🧁">
+
+                <button class="checkout-button" type="submit">
+                    Cadastrar produto
+                </button>
+
+            </form>
+        </div>
+
+
+        <!-- PRODUTOS -->
+
+        <h2>Produtos</h2>
+
+        {% for produto in produtos %}
+
+            <div class="order-card">
+
+                <form
+                    action="{{ url_for('admin_editar_produto', produto_id=produto['id']) }}"
+                    method="POST"
+                >
+
+                    <label>Nome</label>
+                    <input
+                        type="text"
+                        name="nome"
+                        value="{{ produto['nome'] }}"
+                        required
+                    >
+
+                    <label>Descrição</label>
+                    <input
+                        type="text"
+                        name="descricao"
+                        value="{{ produto['descricao'] }}"
+                        required
+                    >
+
+                    <label>Preço</label>
+                    <input
+                        type="number"
+                        name="preco"
+                        step="0.01"
+                        min="0"
+                        value="{{ produto['preco'] }}"
+                        required
+                    >
+
+                    <label>Imagem / emoji</label>
+                    <input
+                        type="text"
+                        name="imagem"
+                        value="{{ produto['imagem'] }}"
+                    >
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            name="disponivel"
+                            {% if produto["disponivel"] %}checked{% endif %}
+                        >
+                        Disponível para venda
+                    </label>
+
+                    <button class="checkout-button" type="submit">
+                        Salvar alterações
+                    </button>
+
+                </form>
+
+            </div>
+
+        {% endfor %}
+
+
+        <!-- PEDIDOS -->
+
+        <h2>Pedidos</h2>
+
+        {% if pedidos %}
+
+            {% for pedido in pedidos %}
+
+                <div class="order-card">
+
+                    <strong>Pedido #{{ pedido["id"] }}</strong>
+
+                    <p>
+                        Cliente: {{ pedido["cliente"] }}
+                    </p>
+
+                    <p>
+                        Total:
+                        <strong>
+                            R$ {{ "%.2f"|format(pedido["valor_total"]) }}
+                        </strong>
+                    </p>
+
+                    <form
+                        action="{{ url_for('admin_status_pedido', pedido_id=pedido['id']) }}"
+                        method="POST"
+                    >
+
+                        <label>Status</label>
+
+                        <select name="status">
+
+                            <option
+                                value="Recebido"
+                                {% if pedido["status"] == "Recebido" %}selected{% endif %}
+                            >
+                                Recebido
+                            </option>
+
+                            <option
+                                value="Em preparo"
+                                {% if pedido["status"] == "Em preparo" %}selected{% endif %}
+                            >
+                                Em preparo
+                            </option>
+
+                            <option
+                                value="Saiu para entrega"
+                                {% if pedido["status"] == "Saiu para entrega" %}selected{% endif %}
+                            >
+                                Saiu para entrega
+                            </option>
+
+                            <option
+                                value="Entregue"
+                                {% if pedido["status"] == "Entregue" %}selected{% endif %}
+                            >
+                                Entregue
+                            </option>
+
+                        </select>
+
+                        <button class="checkout-button" type="submit">
+                            Atualizar status
+                        </button>
+
+                    </form>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="order-card">
+                <p>Nenhum pedido realizado.</p>
+            </div>
+
+        {% endif %}
+
+    </div>
+</section>
+
+{% endblock %}
