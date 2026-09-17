@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Finalizar pedido | Cupcake Shop{% endblock %}
+
+{% block content %}
+
+<section class="checkout-page">
+    <div class="checkout-container">
+
+        <h1>Finalizar pedido</h1>
+
+        {% with mensagens = get_flashed_messages() %}
+            {% if mensagens %}
+                {% for mensagem in mensagens %}
+                    <div class="alerta">{{ mensagem }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+
+            <div class="checkout-card">
+                <h2>📍 Endereço de entrega</h2>
+
+                <label>Rua</label>
+                <input type="text" name="rua" required>
+
+                <label>Número</label>
+                <input type="text" name="numero" required>
+
+                <label>Complemento</label>
+                <input type="text" name="complemento">
+
+                <label>Bairro</label>
+                <input type="text" name="bairro" required>
+
+                <label>Cidade</label>
+                <input type="text" name="cidade" required>
+
+                <label>CEP</label>
+                <input type="text" name="cep" required>
+            </div>
+
+            <div class="checkout-card">
+                <h2>💳 Forma de pagamento</h2>
+
+                <label class="payment-option">
+                    <input type="radio" name="forma_pagamento" value="Pix" required>
+                    Pix
+                </label>
+
+                <label class="payment-option">
+                    <input type="radio" name="forma_pagamento" value="Crédito">
+                    Cartão de crédito
+                </label>
+
+                <label class="payment-option">
+                    <input type="radio" name="forma_pagamento" value="Débito">
+                    Cartão de débito
+                </label>
+
+                <p class="simulation-note">
+                    Pagamento demonstrativo para fins acadêmicos.
+                </p>
+            </div>
+
+            <div class="checkout-card">
+                <h2>🧁 Resumo do pedido</h2>
+
+                {% for item in itens %}
+                    <div class="checkout-item">
+                        <span>{{ item["quantidade"] }}x {{ item["nome"] }}</span>
+                        <strong>R$ {{ "%.2f"|format(item["subtotal"]) }}</strong>
+                    </div>
+                {% endfor %}
+
+                <div class="checkout-total">
+                    <span>Total</span>
+                    <strong>R$ {{ "%.2f"|format(total) }}</strong>
+                </div>
+            </div>
+
+            <button class="checkout-button" type="submit">
+                Confirmar pedido
+            </button>
+
+        </form>
+
+    </div>
+</section>
+
+{% endblock %}
