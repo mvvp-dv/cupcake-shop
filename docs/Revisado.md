@@ -469,3 +469,28 @@ erDiagram
         string status
     }
 ```
+---
+
+# 10. Mapa de Navegação
+
+O mapa de navegação apresenta os principais caminhos disponíveis para clientes e administradores dentro da aplicação.
+
+```mermaid
+flowchart TD
+
+Inicio[Página Inicial / Vitrine]
+
+Inicio --> Login[Login]
+Login --> Cadastro[Cadastro]
+
+Inicio --> Carrinho[Carrinho]
+Carrinho --> Checkout[Checkout]
+Checkout --> Pedido[Confirmação e acompanhamento do pedido]
+
+Inicio --> MeusPedidos[Meus pedidos]
+MeusPedidos --> Pedido
+
+Login --> Admin[Área Administrativa]
+Admin --> PedidosAdmin[Gerenciamento de pedidos]
+Admin --> ProdutosAdmin[Gerenciamento de produtos]
+```
