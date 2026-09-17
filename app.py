@@ -509,6 +509,36 @@ def pedido(pedido_id):
         pedido=pedido,
         itens=itens
     )
+
+
+@app.route("/meus-pedidos")
+def meus_pedidos():
+
+    if "usuario_id" not in session:
+        flash("Faça login para consultar seus pedidos.")
+        return redirect(url_for("login"))
+
+    pedidos = get_db().execute(
+        """
+        SELECT
+            pedidos.id,
+            pedidos.data,
+            pedidos.valor_total,
+            pedidos.status,
+            pagamentos.forma AS forma_pagamento
+        FROM pedidos
+        LEFT JOIN pagamentos
+            ON pagamentos.pedido_id = pedidos.id
+        WHERE pedidos.usuario_id = ?
+        ORDER BY pedidos.id DESC
+        """,
+        (session["usuario_id"],)
+    ).fetchall()
+
+    return render_template(
+        "meus_pedidos.html",
+        pedidos=pedidos
+    )
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)
