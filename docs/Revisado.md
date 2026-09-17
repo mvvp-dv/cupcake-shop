@@ -494,3 +494,90 @@ Login --> Admin[Área Administrativa]
 Admin --> PedidosAdmin[Gerenciamento de pedidos]
 Admin --> ProdutosAdmin[Gerenciamento de produtos]
 ```
+---
+
+# 11. Dicionário de Dados
+
+O dicionário de dados descreve os principais campos utilizados nas tabelas do banco de dados da aplicação.
+
+## USUARIOS
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| id | INTEGER | Identificador do usuário |
+| nome | TEXT | Nome do usuário |
+| email | TEXT | E-mail utilizado para acesso |
+| senha_hash | TEXT | Senha armazenada de forma protegida |
+| tipo | TEXT | Tipo de usuário: cliente ou administrador |
+
+## ENDERECOS
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| id | INTEGER | Identificador do endereço |
+| usuario_id | INTEGER | Usuário proprietário do endereço |
+| rua | TEXT | Rua da entrega |
+| numero | TEXT | Número do endereço |
+| complemento | TEXT | Complemento do endereço |
+| bairro | TEXT | Bairro |
+| cidade | TEXT | Cidade |
+| cep | TEXT | CEP |
+
+## PRODUTOS
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| id | INTEGER | Identificador do produto |
+| nome | TEXT | Nome do cupcake |
+| descricao | TEXT | Descrição do produto |
+| preco | REAL | Preço do produto |
+| imagem | TEXT | Representação visual do produto |
+| disponivel | INTEGER | Indica se o produto está disponível |
+
+## CARRINHOS
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| id | INTEGER | Identificador do carrinho |
+| usuario_id | INTEGER | Usuário proprietário do carrinho |
+
+## ITENS_CARRINHO
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| id | INTEGER | Identificador do item |
+| carrinho_id | INTEGER | Carrinho relacionado |
+| produto_id | INTEGER | Produto adicionado |
+| quantidade | INTEGER | Quantidade selecionada |
+
+## PEDIDOS
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| id | INTEGER | Identificador e número do pedido |
+| usuario_id | INTEGER | Cliente que realizou o pedido |
+| endereco_id | INTEGER | Endereço utilizado na entrega |
+| data | DATETIME | Data e hora do pedido |
+| valor_total | REAL | Valor total |
+| status | TEXT | Situação atual do pedido |
+
+## ITENS_PEDIDO
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| id | INTEGER | Identificador do item |
+| pedido_id | INTEGER | Pedido relacionado |
+| produto_id | INTEGER | Produto comprado |
+| quantidade | INTEGER | Quantidade comprada |
+| preco_unitario | REAL | Preço do produto no momento do pedido |
+
+## PAGAMENTOS
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| id | INTEGER | Identificador do pagamento |
+| pedido_id | INTEGER | Pedido relacionado |
+| forma | TEXT | Forma escolhida: Pix, crédito ou débito |
+| status | TEXT | Status do pagamento demonstrativo |
+
+---
