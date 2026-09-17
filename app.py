@@ -155,6 +155,171 @@ def logout():
     return redirect(url_for("home"))
 
 
+@app.route("/adicionar-carrinho/<int:produto_id>", methods=["POST"])
+def adicionar_carrinho(produto_id):
+
+    if "usuario_id" not in session:
+        flash("Faça login para adicionar produtos ao carrinho.")
+        return redirect(url_for("login"))
+
+    db = get_db()
+
+    carrinho = db.execute(
+        "SELECT id FROM carrinhos WHERE usuario_id = ?",
+        (session["usuario_id"],)
+    ).fetchone()
+
+    produto = db.execute(
+        "SELECT * FROM produtos WHERE id = ? AND disponivel = 1",
+        (produto_id,)
+    ).fetchone()
+
+    if produto is None:
+        flash("Produto indisponível.")
+        return redirect(url_for("home"))
+
+    item = db.execute(
+        """
+        SELECT *
+        FROM itens_carrinho
+        WHERE carrinho_id = ? AND produto_id = ?
+        """,
+        (carrinho["id"], produto_id)
+    ).fetchone()
+
+    if item:
+        db.execute(
+            """
+            UPDATE itens_carrinho
+            SET quantidade = quantidade + 1
+            WHERE id = ?
+            """,
+            (item["id"],)
+        )
+    else:
+        db.execute(
+            """
+            INSERT INTO itens_carrinho
+            (carrinho_id, produto_id, quantidade)
+            VALUES (?, ?, 1)
+            """,
+            (carrinho["id"], produto_id)
+        )
+
+    db.commit()
+
+    return redirect(url_for("home"))
+
+
+@app.route("/carrinho")
+def carrinho():
+
+    if "usuario_id" not in session:
+        flash("Faça login para acessar o carrinho.")
+        return redirect(url_for("login"))
+
+    db = get_db()
+
+    carrinho_usuario = db.execute(
+        "SELECT id FROM carrinhos WHERE usuario_id = ?",
+        (session["usuario_id"],)
+    ).fetchone()
+
+    itens = db.execute(
+        """
+        SELECT
+            itens_carrinho.id,
+            itens_carrinho.quantidade,
+            produtos.id AS produto_id,
+            produtos.nome,
+            produtos.preco,
+            produtos.imagem,
+            (produtos.preco * itens_carrinho.quantidade) AS subtotal
+        FROM itens_carrinho
+        JOIN produtos
+            ON produtos.id = itens_carrinho.produto_id
+        WHERE itens_carrinho.carrinho_id = ?
+        """,
+        (carrinho_usuario["id"],)
+    ).fetchall()
+
+    total = sum(item["subtotal"] for item in itens)
+
+    return render_template(
+        "carrinho.html",
+        itens=itens,
+        total=total
+    )
+
+
+@app.route("/carrinho/aumentar/<int:item_id>", methods=["POST"])
+def aumentar_item(item_id):
+
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+
+    db = get_db()
+
+    db.execute(
+        """
+        UPDATE itens_carrinho
+        SET quantidade = quantidade + 1
+        WHERE id = ?
+        """,
+        (item_id,)
+    )
+
+    db.commit()
+
+    return redirect(url_for("carrinho"))
+
+
+@app.route("/carrinho/diminuir/<int:item_id>", methods=["POST"])
+def diminuir_item(item_id):
+
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+
+    db = get_db()
+
+    item = db.execute(
+        "SELECT quantidade FROM itens_carrinho WHERE id = ?",
+        (item_id,)
+    ).fetchone()
+
+    if item and item["quantidade"] > 1:
+        db.execute(
+            """
+            UPDATE itens_carrinho
+            SET quantidade = quantidade - 1
+            WHERE id = ?
+            """,
+            (item_id,)
+        )
+
+        db.commit()
+
+    return redirect(url_for("carrinho"))
+
+
+@app.route("/carrinho/remover/<int:item_id>", methods=["POST"])
+def remover_item(item_id):
+
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+
+    db = get_db()
+
+    db.execute(
+        "DELETE FROM itens_carrinho WHERE id = ?",
+        (item_id,)
+    )
+
+    db.commit()
+
+    return redirect(url_for("carrinho"))
+    
+
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)
