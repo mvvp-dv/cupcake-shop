@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Carrinho | Cupcake Shop{% endblock %}
+
+{% block content %}
+
+<section class="cart-page">
+
+    <div class="cart-container">
+
+        <h1>🛒 Meu carrinho</h1>
+
+        {% if itens %}
+
+            {% for item in itens %}
+
+            <div class="cart-item">
+
+                <div class="cart-product">
+                    <div class="cart-product-image">
+                        {{ item["imagem"] }}
+                    </div>
+
+                    <div>
+                        <h3>{{ item["nome"] }}</h3>
+                        <p>R$ {{ "%.2f"|format(item["preco"]) }}</p>
+                    </div>
+                </div>
+
+                <div class="cart-actions">
+
+                    <form action="{{ url_for('diminuir_item', item_id=item['id']) }}" method="POST">
+                        <button type="submit">−</button>
+                    </form>
+
+                    <span>{{ item["quantidade"] }}</span>
+
+                    <form action="{{ url_for('aumentar_item', item_id=item['id']) }}" method="POST">
+                        <button type="submit">+</button>
+                    </form>
+
+                </div>
+
+                <div class="cart-subtotal">
+                    R$ {{ "%.2f"|format(item["subtotal"]) }}
+                </div>
+
+                <form action="{{ url_for('remover_item', item_id=item['id']) }}" method="POST">
+                    <button class="remove-button" type="submit">
+                        Remover
+                    </button>
+                </form>
+
+            </div>
+
+            {% endfor %}
+
+            <div class="cart-summary">
+                <div>
+                    <span>Total</span>
+                    <strong>R$ {{ "%.2f"|format(total) }}</strong>
+                </div>
+
+                <button class="checkout-button" type="button">
+                    Continuar pedido
+                </button>
+            </div>
+
+        {% else %}
+
+            <div class="empty-cart">
+                <div>🧁</div>
+                <h2>Seu carrinho está vazio</h2>
+                <p>Escolha seus cupcakes para começar um pedido.</p>
+
+                <a href="{{ url_for('home') }}">
+                    Ver cupcakes
+                </a>
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+{% endblock %}
