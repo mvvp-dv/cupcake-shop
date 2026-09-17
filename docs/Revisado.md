@@ -1,4 +1,4 @@
-# PIT I — Documentação Revisada
+# Documentação Revisada
 
 ## Cupcake Shop
 
@@ -268,4 +268,90 @@ Cliente --> UC05
 Admin --> UC02
 Admin --> UC06
 Admin --> UC07
+```
+---
+
+# 7. Diagrama de Classes
+
+O diagrama de classes representa as principais entidades da aplicação e os relacionamentos existentes entre elas.
+
+```mermaid
+classDiagram
+
+class Usuario {
+    +int id
+    +string nome
+    +string email
+    +string senha_hash
+    +string tipo
+}
+
+class Endereco {
+    +int id
+    +int usuario_id
+    +string rua
+    +string numero
+    +string complemento
+    +string bairro
+    +string cidade
+    +string cep
+}
+
+class Produto {
+    +int id
+    +string nome
+    +string descricao
+    +float preco
+    +string imagem
+    +boolean disponivel
+}
+
+class Carrinho {
+    +int id
+    +int usuario_id
+}
+
+class ItemCarrinho {
+    +int id
+    +int carrinho_id
+    +int produto_id
+    +int quantidade
+}
+
+class Pedido {
+    +int id
+    +int usuario_id
+    +int endereco_id
+    +datetime data
+    +float valor_total
+    +string status
+}
+
+class ItemPedido {
+    +int id
+    +int pedido_id
+    +int produto_id
+    +int quantidade
+    +float preco_unitario
+}
+
+class Pagamento {
+    +int id
+    +int pedido_id
+    +string forma
+    +string status
+}
+
+Usuario "1" --> "0..*" Endereco
+Usuario "1" --> "1" Carrinho
+Usuario "1" --> "0..*" Pedido
+
+Carrinho "1" --> "0..*" ItemCarrinho
+Produto "1" --> "0..*" ItemCarrinho
+
+Pedido "1" --> "1..*" ItemPedido
+Produto "1" --> "0..*" ItemPedido
+
+Pedido "1" --> "1" Pagamento
+Pedido "1" --> "1" Endereco
 ```
