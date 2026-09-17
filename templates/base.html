@@ -50,14 +50,9 @@
 
         {% endif %}
 
-        <button
-            class="cart-button"
-            type="button"
-            id="cartButton"
-        >
-            🛒 Carrinho
-            <span id="cartCount">0</span>
-        </button>
+      <a href="{{ url_for('carrinho') }}" class="cart-button">
+    🛒 Carrinho
+</a>
 
     </nav>
 
