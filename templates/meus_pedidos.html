@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Meus pedidos | Cupcake Shop{% endblock %}
+
+{% block content %}
+
+<section class="order-page">
+    <div class="order-container">
+
+        <h1>📦 Meus pedidos</h1>
+
+        {% if pedidos %}
+
+            {% for pedido in pedidos %}
+
+                <div class="order-card">
+
+                    <div class="order-item">
+                        <div>
+                            <strong>Pedido #{{ pedido["id"] }}</strong>
+                            <p>{{ pedido["forma_pagamento"] }}</p>
+                        </div>
+
+                        <strong>
+                            R$ {{ "%.2f"|format(pedido["valor_total"]) }}
+                        </strong>
+                    </div>
+
+                    <div class="order-status">
+                        {{ pedido["status"] }}
+                    </div>
+
+                    <a
+                        href="{{ url_for('pedido', pedido_id=pedido['id']) }}"
+                        class="order-link"
+                    >
+                        Ver pedido e acompanhar
+                    </a>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty-cart">
+                <div>🧁</div>
+                <h2>Você ainda não fez nenhum pedido</h2>
+
+                <a href="{{ url_for('home') }}">
+                    Ver cupcakes
+                </a>
+            </div>
+
+        {% endif %}
+
+    </div>
+</section>
+
+{% endblock %}
