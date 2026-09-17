@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Cupcake Shop | Vitrine{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div>
+        <span class="eyebrow">Cupcakes feitos para você</span>
+        <h1>Um docinho deixa o dia melhor.</h1>
+        <p>Escolha seu cupcake favorito e monte seu pedido.</p>
+        <a href="#produtos" class="primary-button">Ver cupcakes</a>
+    </div>
+    <div class="hero-art" aria-hidden="true">🧁</div>
+</section>
+
+<section class="catalog" id="produtos">
+    <div class="section-heading">
+        <div>
+            <span class="eyebrow">Nossa vitrine</span>
+            <h2>Escolha seus cupcakes</h2>
+        </div>
+        <span class="available">{{ produtos|length }} disponíveis</span>
+    </div>
+
+    <div class="product-grid">
+        {% for produto in produtos %}
+        <article class="product-card">
+            <div class="product-image">{{ produto["imagem"] or "🧁" }}</div>
+            <div class="product-info">
+                <h3>{{ produto["nome"] }}</h3>
+                <p>{{ produto["descricao"] }}</p>
+                <div class="product-bottom">
+                    <strong>R$ {{ "%.2f"|format(produto["preco"])|replace(".", ",") }}</strong>
+                    <button
+                        class="add-button"
+                        type="button"
+                        data-id="{{ produto['id'] }}"
+                        data-name="{{ produto['nome'] }}"
+                        data-price="{{ produto['preco'] }}">
+                        Adicionar
+                    </button>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<div class="toast" id="toast">Produto adicionado ao carrinho.</div>
+{% endblock %}
