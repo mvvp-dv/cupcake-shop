@@ -384,3 +384,88 @@ sequenceDiagram
     Backend-->>Interface: Confirma realização do pedido
     Interface-->>Cliente: Exibe pedido e status
 ```
+---
+
+# 9. Modelo do Banco de Dados
+
+A aplicação utiliza SQLite para persistência dos dados. O modelo é composto por oito tabelas responsáveis pelo cadastro dos usuários, produtos, carrinho, pedidos, endereços e pagamentos.
+
+```mermaid
+erDiagram
+    USUARIOS ||--o{ ENDERECOS : possui
+    USUARIOS ||--|| CARRINHOS : possui
+    USUARIOS ||--o{ PEDIDOS : realiza
+
+    CARRINHOS ||--o{ ITENS_CARRINHO : contem
+    PRODUTOS ||--o{ ITENS_CARRINHO : compoe
+
+    PEDIDOS ||--|{ ITENS_PEDIDO : contem
+    PRODUTOS ||--o{ ITENS_PEDIDO : compoe
+
+    PEDIDOS ||--|| PAGAMENTOS : possui
+    ENDERECOS ||--o{ PEDIDOS : utilizado_em
+
+    USUARIOS {
+        int id PK
+        string nome
+        string email
+        string senha_hash
+        string tipo
+    }
+
+    ENDERECOS {
+        int id PK
+        int usuario_id FK
+        string rua
+        string numero
+        string complemento
+        string bairro
+        string cidade
+        string cep
+    }
+
+    PRODUTOS {
+        int id PK
+        string nome
+        string descricao
+        float preco
+        string imagem
+        boolean disponivel
+    }
+
+    CARRINHOS {
+        int id PK
+        int usuario_id FK
+    }
+
+    ITENS_CARRINHO {
+        int id PK
+        int carrinho_id FK
+        int produto_id FK
+        int quantidade
+    }
+
+    PEDIDOS {
+        int id PK
+        int usuario_id FK
+        int endereco_id FK
+        datetime data
+        float valor_total
+        string status
+    }
+
+    ITENS_PEDIDO {
+        int id PK
+        int pedido_id FK
+        int produto_id FK
+        int quantidade
+        float preco_unitario
+    }
+
+    PAGAMENTOS {
+        int id PK
+        int pedido_id FK
+        string forma
+        string status
+    }
+```
