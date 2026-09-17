@@ -54,7 +54,26 @@ def init_db():
             """,
             produtos
         )
+    admin = db.execute(
+        "SELECT id FROM usuarios WHERE email = ?",
+        ("admin@cupcakeshop.com",)
+    ).fetchone()
 
+    if admin is None:
+        db.execute(
+            """
+            INSERT INTO usuarios
+            (nome, email, senha_hash, tipo)
+            VALUES (?, ?, ?, 'admin')
+            """,
+            (
+                "Administrador",
+                "admin@cupcakeshop.com",
+                generate_password_hash("admin123")
+            )
+        )
+
+    
     db.commit()
     db.close()
 
@@ -539,6 +558,151 @@ def meus_pedidos():
         "meus_pedidos.html",
         pedidos=pedidos
     )
+
+
+@app.route("/admin")
+def admin():
+
+    if session.get("usuario_tipo") != "admin":
+        flash("Acesso restrito ao administrador.")
+        return redirect(url_for("home"))
+
+    db = get_db()
+
+    produtos = db.execute(
+        "SELECT * FROM produtos ORDER BY id"
+    ).fetchall()
+
+    pedidos = db.execute(
+        """
+        SELECT
+            pedidos.id,
+            pedidos.data,
+            pedidos.valor_total,
+            pedidos.status,
+            usuarios.nome AS cliente
+        FROM pedidos
+        JOIN usuarios
+            ON usuarios.id = pedidos.usuario_id
+        ORDER BY pedidos.id DESC
+        """
+    ).fetchall()
+
+    return render_template(
+        "admin.html",
+        produtos=produtos,
+        pedidos=pedidos
+    )
+
+
+@app.route("/admin/produto/novo", methods=["POST"])
+def admin_novo_produto():
+
+    if session.get("usuario_tipo") != "admin":
+        return redirect(url_for("home"))
+
+    nome = request.form["nome"].strip()
+    descricao = request.form["descricao"].strip()
+    preco = request.form["preco"].replace(",", ".")
+    imagem = request.form.get("imagem", "🧁").strip() or "🧁"
+
+    if not nome or not descricao or not preco:
+        flash("Preencha os dados do produto.")
+        return redirect(url_for("admin"))
+
+    db = get_db()
+
+    db.execute(
+        """
+        INSERT INTO produtos
+        (nome, descricao, preco, imagem, disponivel)
+        VALUES (?, ?, ?, ?, 1)
+        """,
+        (nome, descricao, float(preco), imagem)
+    )
+
+    db.commit()
+
+    flash("Produto cadastrado com sucesso.")
+    return redirect(url_for("admin"))
+
+
+@app.route("/admin/produto/<int:produto_id>", methods=["POST"])
+def admin_editar_produto(produto_id):
+
+    if session.get("usuario_tipo") != "admin":
+        return redirect(url_for("home"))
+
+    nome = request.form["nome"].strip()
+    descricao = request.form["descricao"].strip()
+    preco = request.form["preco"].replace(",", ".")
+    imagem = request.form.get("imagem", "🧁").strip() or "🧁"
+    disponivel = 1 if request.form.get("disponivel") else 0
+
+    db = get_db()
+
+    db.execute(
+        """
+        UPDATE produtos
+        SET nome = ?,
+            descricao = ?,
+            preco = ?,
+            imagem = ?,
+            disponivel = ?
+        WHERE id = ?
+        """,
+        (
+            nome,
+            descricao,
+            float(preco),
+            imagem,
+            disponivel,
+            produto_id
+        )
+    )
+
+    db.commit()
+
+    flash("Produto atualizado.")
+    return redirect(url_for("admin"))
+
+
+@app.route("/admin/pedido/<int:pedido_id>/status", methods=["POST"])
+def admin_status_pedido(pedido_id):
+
+    if session.get("usuario_tipo") != "admin":
+        return redirect(url_for("home"))
+
+    status = request.form["status"]
+
+    status_validos = [
+        "Recebido",
+        "Em preparo",
+        "Saiu para entrega",
+        "Entregue"
+    ]
+
+    if status not in status_validos:
+        flash("Status inválido.")
+        return redirect(url_for("admin"))
+
+    db = get_db()
+
+    db.execute(
+        """
+        UPDATE pedidos
+        SET status = ?
+        WHERE id = ?
+        """,
+        (status, pedido_id)
+    )
+
+    db.commit()
+
+    flash("Status do pedido atualizado.")
+    return redirect(url_for("admin"))
+
+
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)
